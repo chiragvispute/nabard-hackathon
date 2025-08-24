@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
 import 'screens/splash_screen.dart';
+import 'services/user_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Supabase
+  try {
+    await UserService.initialize();
+    print('Supabase initialized successfully');
+  } catch (e) {
+    print('Failed to initialize Supabase: $e');
+  }
+
   runApp(const MainApp());
 }
 

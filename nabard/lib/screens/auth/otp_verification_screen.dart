@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pinput/pinput.dart';
 import '../../services/auth_service.dart';
+import '../../services/user_service.dart';
 import '../../home_screen.dart';
+import 'user_registration_screen.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String phoneNumber;
@@ -57,10 +59,29 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       );
 
       if (success && mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-          (route) => false,
+        // Check if user has completed registration
+        final userService = UserService();
+        final isRegistered = await userService.isRegistrationComplete(
+          widget.phoneNumber,
         );
+
+        if (isRegistered) {
+          // User is fully registered, go to home screen
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+            (route) => false,
+          );
+        } else {
+          // New user, start registration flow with language selection
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder:
+                  (_) =>
+                      LanguageSelectionScreen(phoneNumber: widget.phoneNumber),
+            ),
+            (route) => false,
+          );
+        }
       } else {
         _showErrorSnackBar('Invalid OTP. Please try again.');
         _otpController.clear();
