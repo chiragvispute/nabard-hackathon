@@ -2,28 +2,25 @@ import 'package:flutter/material.dart';
 import '../services/supabase_service.dart';
 import '../services/auth_service.dart';
 
-class ProfileFormDialog extends StatefulWidget {
-  const ProfileFormDialog({super.key});
+class FarmDataFormDialog extends StatefulWidget {
+  const FarmDataFormDialog({super.key});
 
   @override
-  State<ProfileFormDialog> createState() => _ProfileFormDialogState();
+  State<FarmDataFormDialog> createState() => _FarmDataFormDialogState();
 }
 
-class _ProfileFormDialogState extends State<ProfileFormDialog> {
+class _FarmDataFormDialogState extends State<FarmDataFormDialog> {
   final _formKey = GlobalKey<FormState>();
-  String fullName = '';
-  String village = '';
-  String district = '';
-  String? state;
+  String? cropType;
+  String? irrigationType;
+  String? treeSpecies;
+  double? farmSize;
 
-  final List<String> states = [
-    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
-    'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
-    'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya',
-    'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim',
-    'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand',
-    'West Bengal', 'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu',
-    'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
+  final List<String> cropTypes = [
+    'Wheat', 'Rice', 'Maize', 'Sugarcane', 'Cotton', 'Soybean', 'Other'
+  ];
+  final List<String> irrigationTypes = [
+    'Drip', 'Sprinkler', 'Flood', 'Manual', 'None'
   ];
 
   bool isLoading = false;
@@ -35,16 +32,16 @@ class _ProfileFormDialogState extends State<ProfileFormDialog> {
     try {
       final firebaseUser = AuthService.getCurrentUser();
       if (firebaseUser == null) throw Exception('User not logged in');
-      await SupabaseService.saveProfile(
-        fullName: fullName,
-        village: village,
-        district: district,
-        state: state!,
+      await SupabaseService.saveFarmData(
         userId: firebaseUser.uid,
+        cropType: cropType!,
+        farmSize: farmSize!,
+        irrigationType: irrigationType!,
+        treeSpecies: treeSpecies ?? '',
       );
-  if (mounted) Navigator.of(context).pop(true);
+      if (mounted) Navigator.of(context).pop(true);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile saved successfully!')),
+        const SnackBar(content: Text('Farm data saved successfully!')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -71,60 +68,55 @@ class _ProfileFormDialogState extends State<ProfileFormDialog> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text(
-                'Create Profile',
+                'Farm Data Entry',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.green,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              TextFormField(
+              DropdownButtonFormField<String>(
                 decoration: InputDecoration(
-                  labelText: 'Full Name',
+                  labelText: 'Primary Crop Type',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  prefixIcon: const Icon(Icons.person),
+                  prefixIcon: const Icon(Icons.grass),
                 ),
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-                onSaved: (v) => fullName = v ?? '',
+                items: cropTypes.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                validator: (v) => v == null ? 'Required' : null,
+                onChanged: (v) => setState(() => cropType = v),
               ),
               const SizedBox(height: 16),
               TextFormField(
                 decoration: InputDecoration(
-                  labelText: 'Village',
+                  labelText: 'Farm Size (hectares)',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  prefixIcon: const Icon(Icons.home),
+                  prefixIcon: const Icon(Icons.square_foot),
                 ),
+                keyboardType: TextInputType.number,
                 validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-                onSaved: (v) => village = v ?? '',
+                onSaved: (v) => farmSize = double.tryParse(v ?? ''),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                decoration: InputDecoration(
+                  labelText: 'Irrigation Type',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.water),
+                ),
+                items: irrigationTypes.map((i) => DropdownMenuItem(value: i, child: Text(i))).toList(),
+                validator: (v) => v == null ? 'Required' : null,
+                onChanged: (v) => setState(() => irrigationType = v),
               ),
               const SizedBox(height: 16),
               TextFormField(
                 decoration: InputDecoration(
-                  labelText: 'District',
+                  labelText: 'Tree Species (optional)',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  prefixIcon: const Icon(Icons.location_city),
+                  prefixIcon: const Icon(Icons.nature),
                 ),
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-                onSaved: (v) => district = v ?? '',
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'State',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        prefixIcon: const Icon(Icons.map),
-                      ),
-                      items: states.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-                      validator: (v) => v == null ? 'Required' : null,
-                      onChanged: (v) => setState(() => state = v),
-                    ),
-                  ),
-                ],
+                onSaved: (v) => treeSpecies = v,
               ),
               const SizedBox(height: 32),
               Row(

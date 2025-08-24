@@ -3,6 +3,7 @@ import 'screens/auth/login_screen.dart';
 import 'services/auth_service.dart';
 import 'screens/profile_form_dialog.dart';
 import 'screens/user_profile_screen.dart';
+import 'screens/collect_section.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'services/supabase_service.dart';
   
@@ -122,7 +123,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                       _checkProfile();
                       if (result == true) {
-                        // Optionally navigate to profile page after creation
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => const UserProfileScreen(),
@@ -133,6 +133,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 20),
                 ],
+                // Collect Section UI
+                const CollectSection(),
 
                 // Quick Actions
                 _buildQuickActions(),
