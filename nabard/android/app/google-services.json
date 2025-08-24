@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "93748883359",
+    "firebase_url": "https://nabard-hackathon-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "nabard-hackathon",
+    "storage_bucket": "nabard-hackathon.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:93748883359:android:4a11f26efe2c71f48dd7aa",
+        "android_client_info": {
+          "package_name": "com.example.nabard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "93748883359-bcoja5pfetnpi2drq51kn3mc7cr9ddab.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.nabard",
+            "certificate_hash": "f84d7e23d1a7e4130f8cba15cef887debb3a940d"
+          }
+        },
+        {
+          "client_id": "93748883359-83epdailnvbtslvj607fo7crjq4p3sdu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBExmTh9tHEEcTk5HVH0Bq_e_OWLs1G3gc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "93748883359-83epdailnvbtslvj607fo7crjq4p3sdu.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "93748883359-msaa3cogbjkehi2h38507ld7hvku87ct.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.nabard"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

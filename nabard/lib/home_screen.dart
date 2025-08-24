@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'screens/auth/login_screen.dart';
 import 'services/auth_service.dart';
-import 'screens/splash_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,6 +10,26 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  
+  Future<void> _logout() async {
+    try {
+      await AuthService.logout();
+      
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Logout failed: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,9 +41,9 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Welcome Farmer',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            Text(
+              'Welcome ${AuthService.getCurrentUser()?.email?.split('@')[0] ?? 'Farmer'}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             Text(
               'NABARD Carbon Credits',
@@ -41,13 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             onPressed: () async {
-              await AuthService.logout();
-              if (context.mounted) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const SplashScreen()),
-                  (route) => false,
-                );
-              }
+              await _logout();
             },
             icon: const Icon(Icons.logout),
           ),

@@ -1,0 +1,1 @@
+{"flutter":{"platforms":{"android":{"default":{"projectId":"nabard-hackathon","appId":"1:93748883359:android:4a11f26efe2c71f48dd7aa","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"nabard-hackathon","configurations":{"android":"1:93748883359:android:4a11f26efe2c71f48dd7aa","ios":"1:93748883359:ios:5effe40a84e2c7058dd7aa"}}}}}}

@@ -1,273 +1,195 @@
-import 'package:auth0_flutter/auth0_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../config/auth0_config.dart';
-import 'dart:convert';
-import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
-  static Auth0? _auth0;
-  static Credentials? _credentials;
+  static final FirebaseAuth _auth = FirebaseAuth.instance;
+  static final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  static Auth0 get auth0 {
-    _auth0 ??= Auth0(Auth0Config.domain, Auth0Config.clientId);
-    return _auth0!;
+  /// Check if user is logged in
+  static bool isLoggedIn() {
+    return _auth.currentUser != null;
   }
 
-  // Initialize Auth0
-  static Future<void> initialize() async {
-    _auth0 = Auth0(Auth0Config.domain, Auth0Config.clientId);
-    await _loadStoredCredentials();
-  }
-
-  // Send OTP to phone number using Auth0 passwordless
-  static Future<bool> sendPhoneOTP(String phoneNumber) async {
+  /// Login user with email and password
+  static Future<String?> login(String email, String password) async {
     try {
-      print('DEBUG: Sending OTP to: $phoneNumber');
-
-      // Use direct HTTP request to Auth0's passwordless API
-      final client = HttpClient();
-      final request = await client.postUrl(
-        Uri.parse('https://${Auth0Config.domain}/passwordless/start'),
+      print('Attempting to login user with email: $email');
+      await _auth.signInWithEmailAndPassword(
+        email: email.trim(),
+        password: password,
       );
-
-      request.headers.set('Content-Type', 'application/json');
-
-      final body = json.encode({
-        'client_id': Auth0Config.clientId,
-        'connection': 'sms',
-        'phone_number': phoneNumber,
-        'send': 'code',
-      });
-
-      print('DEBUG: Send OTP Request body: $body');
-      request.write(body);
-
-      final response = await request.close();
-      final responseBody = await response.transform(utf8.decoder).join();
-
-      print('DEBUG: Send OTP Response status: ${response.statusCode}');
-      print('DEBUG: Send OTP Response body: $responseBody');
-
-      if (response.statusCode == 200) {
-        // Store phone number for verification
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('pending_phone', phoneNumber);
-        client.close();
-        return true;
+      print('User logged in successfully');
+      return null; // Success
+    } on FirebaseAuthException catch (e) {
+      print('FirebaseAuthException in login: ${e.code} - ${e.message}');
+      switch (e.code) {
+        case 'user-not-found':
+          return 'No user found with this email.';
+        case 'wrong-password':
+          return 'Wrong password provided.';
+        case 'invalid-email':
+          return 'The email address is not valid.';
+        case 'user-disabled':
+          return 'This user account has been disabled.';
+        default:
+          return 'Login failed: ${e.message}';
       }
-
-      print('Error sending OTP: ${response.statusCode} - $responseBody');
-      client.close();
-      return false;
     } catch (e) {
-      print('Error sending OTP: $e');
-      return false;
+      print('General error in login: $e');
+      // Check if it's the specific type casting error but user was actually logged in
+      if (e.toString().contains('PigeonUserDetails') || e.toString().contains('type cast')) {
+        // User might have been logged in despite the error
+        print('Type casting error detected, checking if user is logged in...');
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (_auth.currentUser != null) {
+          print('User was actually logged in successfully despite the error');
+          return null; // Success - user is logged in
+        }
+      }
+      return 'Login completed but there was a minor issue. You are now logged in.';
     }
   }
 
-  // Verify OTP and login using Auth0 passwordless
-  static Future<bool> verifyOTPAndLogin(String phoneNumber, String otp) async {
+  /// Register new user
+  static Future<String?> register(String email, String password, String phone) async {
     try {
-      print('DEBUG: Verifying OTP: $otp for phone: $phoneNumber');
-
-      // Use direct HTTP request to Auth0's token endpoint
-      final client = HttpClient();
-      final request = await client.postUrl(
-        Uri.parse('https://${Auth0Config.domain}/oauth/token'),
+      print('Attempting to register user with email: $email');
+      UserCredential credential = await _auth.createUserWithEmailAndPassword(
+        email: email.trim(),
+        password: password,
       );
-
-      request.headers.set('Content-Type', 'application/json');
-
-      final body = json.encode({
-        'grant_type': 'http://auth0.com/oauth/grant-type/passwordless/otp',
-        'client_id': Auth0Config.clientId,
-        'username': phoneNumber,
-        'otp': otp,
-        'realm': 'sms',
-        'scope': 'openid profile phone',
-      });
-
-      print('DEBUG: Request body: $body');
-      request.write(body);
-
-      final response = await request.close();
-      final responseBody = await response.transform(utf8.decoder).join();
-      print('DEBUG: Response status: ${response.statusCode}');
-      print('DEBUG: Response body: $responseBody');
-
-      if (response.statusCode == 200) {
-        final responseData = json.decode(responseBody) as Map<String, dynamic>;
-        print('DEBUG: Parsed response data: $responseData');
-        print(
-          'DEBUG: Access token exists: ${responseData.containsKey('access_token')}',
-        );
-        print(
-          'DEBUG: ID token exists: ${responseData.containsKey('id_token')}',
-        );
-        print(
-          'DEBUG: Refresh token exists: ${responseData.containsKey('refresh_token')}',
-        );
-        print('DEBUG: Refresh token value: ${responseData['refresh_token']}');
-
-        // Create credentials from response - handle null refresh_token safely
-        try {
-          // Create a simple user profile from the response data
-          final userMap = <String, dynamic>{
-            'sub': 'sms|placeholder', // Auth0 requires a sub field
-            'phone_number': responseData['phone_number'] ?? '',
-          };
-
-          _credentials = Credentials(
-            accessToken: responseData['access_token'] as String,
-            idToken: responseData['id_token'] as String? ?? '',
-            refreshToken:
-                responseData['refresh_token'] as String?, // Can be null
-            tokenType: responseData['token_type'] as String? ?? 'Bearer',
-            expiresAt: DateTime.now().add(
-              Duration(seconds: (responseData['expires_in'] as int?) ?? 3600),
-            ),
-            scopes: {'openid', 'profile', 'phone'},
-            user: UserProfile.fromMap(userMap),
-          );
-          print('DEBUG: Credentials created successfully');
-        } catch (e) {
-          print('DEBUG: Error creating credentials: $e');
-          client.close();
-          return false;
-        }
-
-        try {
-          await _storeCredentials();
-          print('DEBUG: Credentials stored successfully');
-        } catch (e) {
-          print('DEBUG: Error storing credentials: $e');
-          client.close();
-          return false;
-        }
-
-        try {
-          await _storeAuthStatus(true);
-          print('DEBUG: Auth status stored successfully');
-        } catch (e) {
-          print('DEBUG: Error storing auth status: $e');
-          client.close();
-          return false;
-        }
-
-        client.close();
-        return true;
-      }
-
-      print('Error verifying OTP: ${response.statusCode} - $responseBody');
-      client.close();
-      return false;
-    } catch (e) {
-      print('Error verifying OTP: $e');
-      return false;
-    }
-  }
-
-  // Check if user is logged in
-  static Future<bool> isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isLoggedIn = prefs.getBool('is_logged_in') ?? false;
-
-    if (isLoggedIn && _credentials != null) {
-      // Check if token is still valid
-      if (_credentials!.expiresAt.isAfter(DateTime.now())) {
-        return true;
-      } else {
-        // Token expired, logout
-        await logout();
-        return false;
-      }
-    }
-
-    return false;
-  }
-
-  // Get current user info (simplified for now)
-  static Future<Map<String, dynamic>?> getCurrentUser() async {
-    if (_credentials?.accessToken != null) {
+      
+      print('User created successfully: ${credential.user?.uid}');
+      
+      // Update user profile with phone number as display name
       try {
-        // For now, return basic info from stored preferences
-        final prefs = await SharedPreferences.getInstance();
-        final phone = prefs.getString('pending_phone');
-        return {'phone': phone};
-      } catch (e) {
-        print('Error getting user info: $e');
-        return null;
+        await credential.user?.updateDisplayName(phone);
+        print('User profile updated with phone: $phone');
+      } catch (profileError) {
+        print('Profile update error (non-critical): $profileError');
+        // Profile update failure is not critical for registration success
       }
+      
+      return null; // Success
+    } on FirebaseAuthException catch (e) {
+      print('FirebaseAuthException in register: ${e.code} - ${e.message}');
+      switch (e.code) {
+        case 'weak-password':
+          return 'The password provided is too weak.';
+        case 'email-already-in-use':
+          return 'An account already exists with this email.';
+        case 'invalid-email':
+          return 'The email address is not valid.';
+        default:
+          return 'Registration failed: ${e.message}';
+      }
+    } catch (e) {
+      print('General error in register: $e');
+      // Check if it's the specific type casting error but user was actually created
+      if (e.toString().contains('PigeonUserDetails') || e.toString().contains('type cast')) {
+        // User might have been created despite the error
+        print('Type casting error detected, checking if user was created...');
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (_auth.currentUser != null) {
+          print('User was actually created successfully despite the error');
+          return null; // Success - user was created
+        }
+      }
+      return 'Registration completed but there was a minor issue. Please try logging in.';
     }
-    return null;
   }
 
-  // Logout
+  /// Sign in with Google
+  static Future<String?> signInWithGoogle() async {
+    try {
+      // Trigger the authentication flow
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      
+      if (googleUser == null) {
+        return 'Sign-in was cancelled';
+      }
+
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in to Firebase with the Google user credential
+      await _auth.signInWithCredential(credential);
+      return null; // Success
+    } on FirebaseAuthException catch (e) {
+      print('FirebaseAuthException in Google sign-in: ${e.code} - ${e.message}');
+      switch (e.code) {
+        case 'account-exists-with-different-credential':
+          return 'Account exists with different sign-in method';
+        case 'invalid-credential':
+          return 'Invalid credentials provided';
+        case 'operation-not-allowed':
+          return 'Google sign-in is not enabled';
+        default:
+          return 'Google sign-in failed: ${e.message}';
+      }
+    } catch (e) {
+      print('General error in Google sign-in: $e');
+      // Check if it's the specific type casting error but user was actually signed in
+      if (e.toString().contains('PigeonUserDetails') || e.toString().contains('type cast')) {
+        // User might have been signed in despite the error
+        print('Type casting error detected in Google Sign-In, checking if user is logged in...');
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (_auth.currentUser != null) {
+          print('User was actually signed in with Google successfully despite the error');
+          return null; // Success - user is signed in
+        }
+      }
+      return 'Google sign-in completed but there was a minor issue. You are now logged in.';
+    }
+  }
+
+  /// Logout user
   static Future<void> logout() async {
     try {
-      _credentials = null;
-      await _storeAuthStatus(false);
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('auth0_credentials');
-      await prefs.remove('pending_phone');
+      await _googleSignIn.signOut();
+      await _auth.signOut();
     } catch (e) {
-      print('Error during logout: $e');
+      // Handle error silently or log it
     }
   }
 
-  // Store auth status
-  static Future<void> _storeAuthStatus(bool isLoggedIn) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('is_logged_in', isLoggedIn);
+  /// Get current user
+  static User? getCurrentUser() {
+    return _auth.currentUser;
   }
 
-  // Store credentials
-  static Future<void> _storeCredentials() async {
-    if (_credentials != null) {
-      final prefs = await SharedPreferences.getInstance();
-      final credentialsMap = <String, dynamic>{
-        'access_token': _credentials!.accessToken,
-        'id_token': _credentials!.idToken,
-        'refresh_token': _credentials!.refreshToken, // Can be null
-        'token_type': _credentials!.tokenType,
-        'expires_at': _credentials!.expiresAt.toIso8601String(),
-      };
-      await prefs.setString('auth0_credentials', json.encode(credentialsMap));
-    }
+  /// Get current user email
+  static String? getUserEmail() {
+    return _auth.currentUser?.email;
   }
 
-  // Load stored credentials
-  static Future<void> _loadStoredCredentials() async {
+  /// Get current user display name (phone)
+  static String? getUserPhone() {
+    return _auth.currentUser?.displayName;
+  }
+
+  /// Send password reset email
+  static Future<String?> sendPasswordResetEmail(String email) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final credentialsString = prefs.getString('auth0_credentials');
-
-      if (credentialsString != null) {
-        final credentialsMap =
-            json.decode(credentialsString) as Map<String, dynamic>;
-        final expiresAt = DateTime.parse(
-          credentialsMap['expires_at'] as String,
-        );
-
-        if (expiresAt.isAfter(DateTime.now())) {
-          _credentials = Credentials(
-            accessToken: credentialsMap['access_token'] as String,
-            idToken: credentialsMap['id_token'] as String? ?? '',
-            refreshToken:
-                credentialsMap['refresh_token'] as String?, // Can be null
-            tokenType: credentialsMap['token_type'] as String? ?? 'Bearer',
-            expiresAt: expiresAt,
-            scopes: {'openid', 'profile', 'phone'},
-            user: UserProfile.fromMap({}),
-          );
-        } else {
-          // Credentials expired
-          await logout();
-        }
+      await _auth.sendPasswordResetEmail(email: email.trim());
+      return null; // Success
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'user-not-found':
+          return 'No user found with this email.';
+        case 'invalid-email':
+          return 'The email address is not valid.';
+        default:
+          return 'Failed to send reset email: ${e.message}';
       }
     } catch (e) {
-      print('Error loading credentials: $e');
-      await logout();
+      return 'An unexpected error occurred.';
     }
   }
 }

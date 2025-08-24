@@ -9,12 +9,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  auth0_flutter: ^1.12.0
-  shared_preferences: ^2.5.3
-  pinput: ^5.0.1
-  country_picker: ^2.0.27
   http: ^1.5.0
-  supabase_flutter: ^2.9.1
+  shared_preferences: ^2.2.2
+  country_picker: ^2.0.26
+  firebase_core: ^2.32.0
+  firebase_auth: ^4.16.0
+  google_sign_in: ^6.2.1
 
 dev_dependencies:
   flutter_test:
