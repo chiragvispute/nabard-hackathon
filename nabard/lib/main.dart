@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/splash_screen.dart';
 import 'services/user_service.dart';
+import 'services/auth_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,6 +12,14 @@ void main() async {
     print('Supabase initialized successfully');
   } catch (e) {
     print('Failed to initialize Supabase: $e');
+  }
+
+  // Initialize Auth Service
+  try {
+    await AuthService.initialize();
+    print('Auth Service initialized successfully');
+  } catch (e) {
+    print('Failed to initialize Auth Service: $e');
   }
 
   runApp(const MainApp());
