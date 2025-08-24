@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'screens/auth/login_screen.dart';
 import 'services/auth_service.dart';
+import 'screens/profile_form_dialog.dart';
+import 'screens/user_profile_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'services/supabase_service.dart';
+  
+
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,6 +18,23 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   
+  bool hasProfile = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkProfile();
+  }
+
+  Future<void> _checkProfile() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+    final profile = await SupabaseService.fetchUserProfile(user.id);
+    setState(() {
+      hasProfile = profile != null;
+    });
+  }
+
   Future<void> _logout() async {
     try {
       await AuthService.logout();
@@ -81,6 +105,34 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Carbon Credits Summary Card
                 _buildCarbonCreditsCard(),
                 const SizedBox(height: 20),
+
+                // Make Profile Button (only if not created)
+                if (!hasProfile) ...[
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.person_add),
+                    label: const Text('Make Profile'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () async {
+                      final result = await showDialog(
+                        context: context,
+                        builder: (context) => const ProfileFormDialog(),
+                      );
+                      _checkProfile();
+                      if (result == true) {
+                        // Optionally navigate to profile page after creation
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const UserProfileScreen(),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                ],
 
                 // Quick Actions
                 _buildQuickActions(),
@@ -501,6 +553,15 @@ class _HomeScreenState extends State<HomeScreen> {
       selectedItemColor: Colors.green,
       unselectedItemColor: Colors.grey,
       currentIndex: 0,
+      onTap: (index) {
+        if (index == 3) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const UserProfileScreen(),
+            ),
+          );
+        }
+      },
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
         BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'Submit'),
