@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'take_photo_dialog.dart';
 import 'farm_data_form_dialog.dart';
+import 'farm_boundary_dialog.dart';
 
 class CollectSection extends StatelessWidget {
   const CollectSection({super.key});
@@ -62,7 +63,12 @@ class CollectSection extends StatelessWidget {
                 icon: Icons.map,
                 title: 'Farm Boundary',
                 subtitle: 'Draw Polygon',
-                onTap: () {},
+                onTap: () async {
+                  await showDialog(
+                    context: context,
+                    builder: (context) => const FarmBoundaryDialog(),
+                  );
+                },
               ),
             ),
             const SizedBox(width: 12),

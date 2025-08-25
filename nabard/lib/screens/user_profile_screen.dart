@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
+import 'profile_form_dialog.dart';
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
@@ -61,6 +62,22 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     ),
                   ),
                 ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final result = await showDialog(
+            context: context,
+            builder: (context) => const ProfileFormDialog(),
+          );
+          if (result == true) {
+            setState(() {
+              isLoading = true;
+            });
+            await _fetchProfile();
+          }
+        },
+        backgroundColor: Colors.green,
+        child: const Icon(Icons.edit),
+      ),
     );
   }
 }

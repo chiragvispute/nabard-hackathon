@@ -242,30 +242,7 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.camera_alt,
-                title: 'Submit Data',
-                subtitle: 'Upload photos',
-                color: Colors.blue,
-                onTap: () {},
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.agriculture,
-                title: 'Farm Profile',
-                subtitle: 'Update details',
-                color: Colors.orange,
-                onTap: () {},
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
+  // Removed Submit Data and Farm Profile quick actions
         Row(
           children: [
             Expanded(

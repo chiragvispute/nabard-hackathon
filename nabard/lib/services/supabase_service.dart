@@ -1,6 +1,12 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseService {
+  static Future<void> saveFarmBoundary(String userId, List<Map<String, double>> coordinates) async {
+    await client.from('farm_boundaries').upsert({
+      'user_id': userId,
+      'boundary': coordinates,
+    });
+  }
   static Future<List<Map<String, dynamic>>> fetchProfiles() async {
     final data = await client.from('profiles').select();
     return List<Map<String, dynamic>>.from(data);
