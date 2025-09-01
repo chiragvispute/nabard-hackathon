@@ -97,107 +97,108 @@ class _FarmBoundaryDialogState extends State<FarmBoundaryDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      child: SizedBox(
-        height: 540,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: const InputDecoration(
-                        hintText: 'Search location...',
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                      ),
-                      onSubmitted: (_) => _searchLocation(),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Draw Farm Boundary'),
+        backgroundColor: Colors.green,
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: const InputDecoration(
+                      hintText: 'Search location...',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 0),
                     ),
+                    onSubmitted: (_) => _searchLocation(),
                   ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: _searchLocation,
-                    child: const Text('Search'),
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: _searchLocation,
+                  child: const Text('Search'),
+                ),
+              ],
             ),
-            Expanded(
-              child: Stack(
-                children: [
-                  FlutterMap(
-                    mapController: _mapController,
-                    options: MapOptions(
-                      center: LatLng(20.5937, 78.9629),
-                      zoom: 5,
-                      onTap: (tapPosition, point) => _onMapTap(point),
-                    ),
-                    children: [
-                      TileLayer(
-                        urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        subdomains: const ['a', 'b', 'c'],
-                      ),
-                      PolygonLayer(
-                        polygons: [
-                          Polygon(
-                            points: _polygonPoints,
-                            color: Colors.green.withOpacity(0.2),
-                            borderColor: Colors.green,
-                            borderStrokeWidth: 2,
-                          ),
-                        ],
-                      ),
-                    ],
+          ),
+          Expanded(
+            child: Stack(
+              children: [
+                FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    center: LatLng(20.5937, 78.9629),
+                    zoom: 5,
+                    onTap: (tapPosition, point) => _onMapTap(point),
                   ),
-                  if (ndviImageUrl != null)
-                    Positioned(
-                      top: 16,
-                      right: 16,
-                      child: Container(
-                        width: 200,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.green, width: 2),
-                          borderRadius: BorderRadius.circular(12),
+                  children: [
+                    TileLayer(
+                      urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      subdomains: const ['a', 'b', 'c'],
+                    ),
+                    PolygonLayer(
+                      polygons: [
+                        Polygon(
+                          points: _polygonPoints,
+                          color: Colors.green.withOpacity(0.2),
+                          borderColor: Colors.green,
+                          borderStrokeWidth: 2,
                         ),
-                        child: Image.network(ndviImageUrl!, fit: BoxFit.cover),
+                      ],
+                    ),
+                  ],
+                ),
+                if (ndviImageUrl != null)
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.green, width: 2),
+                        borderRadius: BorderRadius.circular(12),
                       ),
+                      child: Image.network(ndviImageUrl!, fit: BoxFit.cover),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _startDrawing,
-                      child: const Text('Start Drawing'),
-                    ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _startDrawing,
+                    child: const Text('Start Drawing'),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _polygonPoints.length > 2 ? _saveBoundary : null,
-                      child: const Text('Save Boundary'),
-                    ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _polygonPoints.length > 2 ? _saveBoundary : null,
+                    child: const Text('Save Boundary'),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _polygonPoints.length > 2 && !_loadingNdvi ? _fetchNdvi : null,
-                      child: _loadingNdvi ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Get NDVI'),
-                    ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _polygonPoints.length > 2 && !_loadingNdvi ? _fetchNdvi : null,
+                    child: _loadingNdvi ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Get NDVI'),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

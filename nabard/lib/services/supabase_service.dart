@@ -14,10 +14,16 @@ class SupabaseService {
   static Future<void> saveFarmPhoto({
     required String userId,
     required String photoPath,
+    double? latitude,
+    double? longitude,
+    String? season,
   }) async {
     await client.from('photos').upsert({
       'user_id': userId,
       'photo_url': photoPath,
+      'latitude': latitude,
+      'longitude': longitude,
+      'season': season,
     });
   }
   static Future<void> saveFarmData({

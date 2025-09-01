@@ -64,9 +64,11 @@ class CollectSection extends StatelessWidget {
                 title: 'Farm Boundary',
                 subtitle: 'Draw Polygon',
                 onTap: () async {
-                  await showDialog(
-                    context: context,
-                    builder: (context) => const FarmBoundaryDialog(),
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const FarmBoundaryDialog(),
+                      fullscreenDialog: true,
+                    ),
                   );
                 },
               ),
