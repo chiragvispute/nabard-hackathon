@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import '../services/supabase_service.dart';
 import '../services/auth_service.dart';
+import 'dart:io';
 
 class TakePhotoDialog extends StatefulWidget {
   const TakePhotoDialog({super.key});
@@ -14,6 +15,8 @@ class TakePhotoDialog extends StatefulWidget {
 class _TakePhotoDialogState extends State<TakePhotoDialog> {
   bool isLoading = false;
   List<XFile> photos = [];
+  double? lastLatitude;
+  double? lastLongitude;
   String? selectedSeason;
   final List<String> seasons = ['Kharif', 'Rabi', 'Summer', 'Other'];
 
@@ -43,22 +46,9 @@ class _TakePhotoDialogState extends State<TakePhotoDialog> {
         } catch (e) {
           position = null;
         }
-        // Save each photo info to Supabase (add location and season)
-        final firebaseUser = AuthService.getCurrentUser();
-        if (firebaseUser == null) throw Exception('User not logged in');
-        for (final photo in pickedFiles) {
-          await SupabaseService.saveFarmPhoto(
-            userId: firebaseUser.uid,
-            photoPath: photo.path,
-            latitude: position?.latitude,
-            longitude: position?.longitude,
-            season: selectedSeason,
-          );
-        }
-        if (mounted) Navigator.of(context).pop(true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Photos saved with GPS and season!')),
-        );
+        lastLatitude = position?.latitude;
+        lastLongitude = position?.longitude;
+        // Now wait for user to confirm saving
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -170,8 +160,67 @@ class _TakePhotoDialogState extends State<TakePhotoDialog> {
                 },
               ),
               const SizedBox(height: 16),
-            if (photos.isNotEmpty)
+            if (photos.isNotEmpty) ...[
               Text('Selected: ${photos.length} photos', textAlign: TextAlign.center),
+              if (lastLatitude != null && lastLongitude != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    'GPS: ${lastLatitude!.toStringAsFixed(6)}, ${lastLongitude!.toStringAsFixed(6)}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 80,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: photos.length,
+                  itemBuilder: (ctx, i) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Image.file(
+                      File(photos[i].path),
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.save),
+                label: const Text('Save Photos'),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                onPressed: isLoading ? null : () async {
+                  setState(() => isLoading = true);
+                  try {
+                    final firebaseUser = AuthService.getCurrentUser();
+                    if (firebaseUser == null) throw Exception('User not logged in');
+                    for (final photo in photos) {
+                      await SupabaseService.saveFarmPhoto(
+                        userId: firebaseUser.uid,
+                        photoPath: photo.path,
+                        latitude: lastLatitude,
+                        longitude: lastLongitude,
+                        season: selectedSeason,
+                      );
+                    }
+                    if (mounted) Navigator.of(context).pop(true);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Photos saved with GPS and season!')),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: $e')),
+                    );
+                  } finally {
+                    setState(() => isLoading = false);
+                  }
+                },
+              ),
+            ],
           ],
         ),
       ),
