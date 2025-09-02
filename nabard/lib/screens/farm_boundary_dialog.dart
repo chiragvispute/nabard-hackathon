@@ -17,6 +17,7 @@ class _FarmBoundaryDialogState extends State<FarmBoundaryDialog> {
   List<LatLng> _polygonPoints = [];
   bool _drawing = false;
   String? ndviImageUrl;
+  double? ndviValue;
   bool _loadingNdvi = false;
   TextEditingController _searchController = TextEditingController();
   MapController _mapController = MapController();
@@ -54,12 +55,14 @@ class _FarmBoundaryDialogState extends State<FarmBoundaryDialog> {
   Future<void> _fetchNdvi() async {
     setState(() { _loadingNdvi = true; });
     final coords = _polygonPoints.map((p) => [p.longitude, p.latitude]).toList();
-    final url = 'http://192.168.0.100:5000/gee/ndvi'; // Replace with your backend URL
+    final url = 'http://192.168.190.237:5000/gee/ndvi'; // Replace with your backend URL
     final body = jsonEncode({'coordinates': coords});
     final response = await http.post(Uri.parse(url), body: body, headers: {'Content-Type': 'application/json'});
     if (response.statusCode == 200) {
+      final resp = jsonDecode(response.body);
       setState(() {
-        ndviImageUrl = jsonDecode(response.body)['thumb_url'];
+        ndviImageUrl = resp['thumb_url'];
+        ndviValue = resp['ndvi_value'] is num ? resp['ndvi_value'].toDouble() : null;
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -158,14 +161,73 @@ class _FarmBoundaryDialogState extends State<FarmBoundaryDialog> {
                   Positioned(
                     top: 16,
                     right: 16,
-                    child: Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.green, width: 2),
-                        borderRadius: BorderRadius.circular(12),
+                    child: Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      child: Container(
+                        width: 240,
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.eco, color: Colors.green),
+                                const SizedBox(width: 8),
+                                const Text('NDVI Analysis', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            if (ndviValue != null) ...[
+                              Text('NDVI Value:', style: TextStyle(color: Colors.grey[700], fontWeight: FontWeight.w500)),
+                              Text(
+                                ndviValue!.toStringAsFixed(3),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 22,
+                                  color: ndviValue! < 0.2
+                                      ? Colors.red
+                                      : ndviValue! < 0.5
+                                          ? Colors.orange
+                                          : Colors.green,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                height: 12,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(6),
+                                  gradient: const LinearGradient(
+                                    colors: [Colors.red, Colors.orange, Colors.green],
+                                    stops: [0.0, 0.5, 1.0],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                ndviValue! < 0.2
+                                    ? 'Low vegetation'
+                                    : ndviValue! < 0.5
+                                        ? 'Moderate vegetation'
+                                        : 'Healthy vegetation',
+                                style: TextStyle(
+                                  color: ndviValue! < 0.2
+                                      ? Colors.red
+                                      : ndviValue! < 0.5
+                                          ? Colors.orange
+                                          : Colors.green,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 12),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(ndviImageUrl!, fit: BoxFit.cover, height: 120),
+                            ),
+                          ],
+                        ),
                       ),
-                      child: Image.network(ndviImageUrl!, fit: BoxFit.cover),
                     ),
                   ),
               ],

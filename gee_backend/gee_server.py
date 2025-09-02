@@ -33,7 +33,16 @@ def get_ndvi():
         'palette': ['red', 'yellow', 'green']
     })
 
-    return jsonify({'thumb_url': url})
+    # Calculate mean NDVI value for the polygon
+    mean_dict = ndvi.reduceRegion(
+        reducer=ee.Reducer.mean(),
+        geometry=polygon,
+        scale=10,
+        maxPixels=1e9
+    ).getInfo()
+    mean_ndvi = mean_dict.get('nd', None)  # 'nd' is the default band name for normalizedDifference
+
+    return jsonify({'thumb_url': url, 'ndvi_value': mean_ndvi})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
