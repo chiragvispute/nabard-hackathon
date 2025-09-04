@@ -36,7 +36,7 @@ class _CollectSectionState extends State<CollectSection> {
         ),
         // Tab content
         if (selectedTab == 0) ...[
-          // Only Quick Data Entry section remains in Collect tab
+          // Quick Data Entry section
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -77,6 +77,110 @@ class _CollectSectionState extends State<CollectSection> {
                   onPressed: () {},
                 ),
               ],
+            ),
+          ),
+        ] else if (selectedTab == 4) ...[
+          // Water Usage Tab UI with form
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: const [
+                      Icon(Icons.water, color: Colors.blue, size: 32),
+                      SizedBox(width: 12),
+                      Text('Water Usage', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('Enter irrigation details, water source, and usage for your farm.'),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'Water Source',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'Amount Used (litres)',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'Irrigation Method',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.save),
+                    label: const Text('Save Water Usage'),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
+                    onPressed: () {},
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ] else if (selectedTab == 5) ...[
+          // Crop Data Tab UI with form
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: const [
+                      Icon(Icons.eco, color: Colors.green, size: 32),
+                      SizedBox(width: 12),
+                      Text('Crop Data', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('Enter crop type, growth stage, and other relevant details.'),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'Crop Type',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'Growth Stage',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'Area Covered (hectares)',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.save),
+                    label: const Text('Save Crop Data'),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                    onPressed: () {},
+                  ),
+                ],
+              ),
             ),
           ),
         ] else if (selectedTab == 1) ...[

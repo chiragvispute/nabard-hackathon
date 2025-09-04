@@ -25,6 +25,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   
   bool hasProfile = false;
+  final GlobalKey<CreditsTabViewState> _creditsTabKey = GlobalKey<CreditsTabViewState>();
 
   @override
   void initState() {
@@ -152,11 +153,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SubmitSection(),
                 ] else if (_bottomNavIndex == 2) ...[
                   // Credits Tab: Tabs for Monitor, Calculate, Report
-                  const CreditsTabView(),
+                  CreditsTabView(key: _creditsTabKey),
                 ] else if (_bottomNavIndex == 3) ...[
                   // Profile Tab
                   const UserProfileScreen(),
-                ],
+                ]
               ],
             ),
           ),
@@ -269,7 +270,6 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
-  // Removed Submit Data and Farm Profile quick actions
         Row(
           children: [
             Expanded(
@@ -278,7 +278,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: 'Carbon Report',
                 subtitle: 'View progress',
                 color: Colors.green,
-                onTap: () {},
+                onTap: () {
+                  setState(() {
+                    _bottomNavIndex = 2; // Credits tab
+                  });
+                  // Switch to Report tab in CreditsTabView
+                  Future.delayed(Duration.zero, () {
+                    _creditsTabKey.currentState?.setTab(2);
+                  });
+                },
               ),
             ),
             const SizedBox(width: 12),
@@ -288,7 +296,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: 'Weather',
                 subtitle: 'Today\'s forecast',
                 color: Colors.purple,
-                onTap: () {},
+                onTap: () {
+                  setState(() {
+                    _bottomNavIndex = 2; // Credits tab
+                  });
+                  // Switch to Monitor tab in CreditsTabView
+                  Future.delayed(Duration.zero, () {
+                    _creditsTabKey.currentState?.setTab(0);
+                  });
+                },
               ),
             ),
           ],
