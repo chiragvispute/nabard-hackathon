@@ -7,11 +7,16 @@ class CreditsTabView extends StatefulWidget {
   const CreditsTabView({super.key});
 
   @override
-  State<CreditsTabView> createState() => _CreditsTabViewState();
+  State<CreditsTabView> createState() => CreditsTabViewState();
 }
 
-class _CreditsTabViewState extends State<CreditsTabView> {
+class CreditsTabViewState extends State<CreditsTabView> {
   int _selectedTab = 0;
+  void setTab(int tabIndex) {
+    setState(() {
+      _selectedTab = tabIndex;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

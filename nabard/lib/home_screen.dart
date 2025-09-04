@@ -25,6 +25,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   
   bool hasProfile = false;
+  final GlobalKey<CreditsTabViewState> _creditsTabKey = GlobalKey<CreditsTabViewState>();
 
   @override
   void initState() {
@@ -152,11 +153,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SubmitSection(),
                 ] else if (_bottomNavIndex == 2) ...[
                   // Credits Tab: Tabs for Monitor, Calculate, Report
-                  const CreditsTabView(),
+                  CreditsTabView(key: _creditsTabKey),
                 ] else if (_bottomNavIndex == 3) ...[
                   // Profile Tab
                   const UserProfileScreen(),
-                ],
+                ]
               ],
             ),
           ),
