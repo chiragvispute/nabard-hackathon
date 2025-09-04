@@ -2,9 +2,20 @@ import 'package:flutter/material.dart';
 import 'take_photo_dialog.dart';
 import 'farm_data_form_dialog.dart';
 import 'farm_boundary_dialog.dart';
+import 'monitor_section.dart';
+import 'calculate_section.dart';
+import 'report_section.dart';
+import 'submit_section.dart';
 
-class CollectSection extends StatelessWidget {
+class CollectSection extends StatefulWidget {
   const CollectSection({super.key});
+
+  @override
+  State<CollectSection> createState() => _CollectSectionState();
+}
+
+class _CollectSectionState extends State<CollectSection> {
+  int selectedTab = 0; // 0: Collect, 1: Monitor, 2: Calculate, 3: Report
 
   @override
   Widget build(BuildContext context) {
@@ -16,146 +27,98 @@ class CollectSection extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 16),
           child: Row(
             children: [
-              _tab('Collect', true),
-              _tab('Monitor', false),
-              _tab('Calculate', false),
-              _tab('Report', false),
+              _tab('Collect', 0),
+              _tab('Monitor', 1),
+              _tab('Calculate', 2),
+              _tab('Report', 3),
             ],
           ),
         ),
-        // Cards row
-        Row(
-          children: [
-            Expanded(
-              child: _CollectCard(
-                icon: Icons.assignment,
-                title: 'Farm Data',
-                subtitle: 'Enter details',
-                onTap: () async {
-                  await showDialog(
-                    context: context,
-                    builder: (context) => const FarmDataFormDialog(),
-                  );
-                },
-              ),
+        // Tab content
+        if (selectedTab == 0) ...[
+          // Only Quick Data Entry section remains in Collect tab
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(16),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _CollectCard(
-                icon: Icons.camera_alt,
-                title: 'Take Photo',
-                subtitle: 'Upload or Capture',
-                onTap: () async {
-                  await showDialog(
-                    context: context,
-                    builder: (context) => const TakePhotoDialog(),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _CollectCard(
-                icon: Icons.map,
-                title: 'Farm Boundary',
-                subtitle: 'Draw Polygon',
-                onTap: () async {
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const FarmBoundaryDialog(),
-                      fullscreenDialog: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Quick Data Entry', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green)),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.nature),
+                        label: const Text('Tree Count'),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.green),
+                        onPressed: () {},
+                      ),
                     ),
-                  );
-                },
-              ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.thermostat),
+                        label: const Text('Soil Temp'),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.green),
+                        onPressed: () {},
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.upload),
+                  label: const Text('Upload Voice Note'),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.green),
+                  onPressed: () {},
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _CollectCard(
-                icon: Icons.water,
-                title: 'Water Usage',
-                subtitle: 'Irrigation Data',
-                onTap: () {},
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _CollectCard(
-                icon: Icons.eco,
-                title: 'Crop Data',
-                subtitle: 'Growth Stage',
-                onTap: () {},
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
-        // Quick Data Entry section
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(16),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Quick Data Entry', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green)),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.nature),
-                      label: const Text('Tree Count'),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.green),
-                      onPressed: () {},
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.thermostat),
-                      label: const Text('Soil Temp'),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.green),
-                      onPressed: () {},
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.upload),
-                label: const Text('Upload Voice Note'),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.green),
-                onPressed: () {},
-              ),
-            ],
+        ] else if (selectedTab == 1) ...[
+          // Monitor Section UI
+          const MonitorSection(),
+        ] else if (selectedTab == 2) ...[
+          // Calculate Section UI
+          const CalculateSection(),
+        ] else if (selectedTab == 3) ...[
+          // Report Section UI
+          const ReportSection(),
+        ] else ...[
+          // Placeholder for other tabs
+          Container(
+            height: 200,
+            alignment: Alignment.center,
+            child: const Text('Coming Soon...', style: TextStyle(fontSize: 18, color: Colors.grey)),
           ),
-        ),
+        ],
       ],
     );
   }
 
-  Widget _tab(String label, bool selected) {
+  Widget _tab(String label, int tabIndex) {
+    final selected = selectedTab == tabIndex;
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: selected ? Colors.white : Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(12),
-          border: selected ? Border.all(color: Colors.green, width: 2) : null,
-        ),
-        child: Center(
-          child: Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: selected ? Colors.green : Colors.black)),
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            selectedTab = tabIndex;
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: selected ? Colors.white : Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(12),
+            border: selected ? Border.all(color: Colors.green, width: 2) : null,
+          ),
+          child: Center(
+            child: Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: selected ? Colors.green : Colors.black)),
+          ),
         ),
       ),
     );

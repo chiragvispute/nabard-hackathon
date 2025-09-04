@@ -4,6 +4,11 @@ import 'services/auth_service.dart';
 import 'screens/profile_form_dialog.dart';
 import 'screens/user_profile_screen.dart';
 import 'screens/collect_section.dart';
+import 'screens/submit_section.dart';
+import 'screens/monitor_section.dart';
+import 'screens/calculate_section.dart';
+import 'screens/report_section.dart';
+import 'screens/credits_tab_view.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'services/supabase_service.dart';
   
@@ -54,6 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
   }
+            int _bottomNavIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -133,25 +139,46 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 20),
                 ],
-                // Collect Section UI
-                const CollectSection(),
 
-                // Quick Actions
-                _buildQuickActions(),
-                const SizedBox(height: 20),
-
-                // Farm Status
-                _buildFarmStatus(),
-                const SizedBox(height: 20),
-
-                // Recent Activity
-                _buildRecentActivity(),
+                if (_bottomNavIndex == 0) ...[
+                  // Home Tab: Only Quick Actions, Farm Status, Recent Activity
+                  _buildQuickActions(),
+                  const SizedBox(height: 20),
+                  _buildFarmStatus(),
+                  const SizedBox(height: 20),
+                  _buildRecentActivity(),
+                ] else if (_bottomNavIndex == 1) ...[
+                  // Submit Tab: All cards except quick actions, farm status, recent activity
+                  const SubmitSection(),
+                ] else if (_bottomNavIndex == 2) ...[
+                  // Credits Tab: Tabs for Monitor, Calculate, Report
+                  const CreditsTabView(),
+                ] else if (_bottomNavIndex == 3) ...[
+                  // Profile Tab
+                  const UserProfileScreen(),
+                ],
               ],
             ),
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigation(),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Colors.green,
+        unselectedItemColor: Colors.grey,
+        currentIndex: _bottomNavIndex,
+        onTap: (index) {
+          setState(() {
+            _bottomNavIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'Submit'),
+          BottomNavigationBarItem(icon: Icon(Icons.eco), label: 'Credits'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
+      ),
     );
   }
 
