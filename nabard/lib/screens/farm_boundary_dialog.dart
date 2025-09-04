@@ -22,7 +22,29 @@ class _FarmBoundaryDialogState extends State<FarmBoundaryDialog> {
   TextEditingController _searchController = TextEditingController();
   MapController _mapController = MapController();
 
-  void _onMapTap(LatLng point) {
+  Future<String?> _getLocationName(double latitude, double longitude) async {
+    final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=$latitude&lon=$longitude');
+    final response = await http.get(url, headers: {'User-Agent': 'nabard-hackathon-app'});
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['display_name'];
+    }
+    return null;
+  }
+
+  void _onMapTap(LatLng point) async {
+    final locationName = await _getLocationName(point.latitude, point.longitude);
+    if (locationName != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Location: $locationName')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Location name not found')),
+      );
+    }
+
     if (_drawing) {
       setState(() {
         _polygonPoints.add(point);
@@ -142,8 +164,11 @@ class _FarmBoundaryDialogState extends State<FarmBoundaryDialog> {
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                      subdomains: const ['a', 'b', 'c'],
+                      urlTemplate: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                      // ESRI ArcGIS World Imagery satellite view
+                      additionalOptions: {
+                        'attribution': '© ESRI World Imagery',
+                      },
                     ),
                     PolygonLayer(
                       polygons: [

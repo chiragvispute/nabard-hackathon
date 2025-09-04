@@ -80,8 +80,11 @@ class _FarmBoundaryScreenState extends State<FarmBoundaryScreen> {
             ),
             children: [
               TileLayer(
-                urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                subdomains: const ['a', 'b', 'c'],
+                urlTemplate: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                attributionBuilder: (_) {
+                  return Text('© ESRI World Imagery');
+                },
+                // ESRI ArcGIS World Imagery satellite view with attribution
               ),
               PolygonLayer(
                 polygons: [
