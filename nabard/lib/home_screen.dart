@@ -270,7 +270,6 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
-  // Removed Submit Data and Farm Profile quick actions
         Row(
           children: [
             Expanded(
@@ -279,7 +278,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: 'Carbon Report',
                 subtitle: 'View progress',
                 color: Colors.green,
-                onTap: () {},
+                onTap: () {
+                  setState(() {
+                    _bottomNavIndex = 2; // Credits tab
+                  });
+                  // Switch to Report tab in CreditsTabView
+                  Future.delayed(Duration.zero, () {
+                    _creditsTabKey.currentState?.setTab(2);
+                  });
+                },
               ),
             ),
             const SizedBox(width: 12),
@@ -289,7 +296,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: 'Weather',
                 subtitle: 'Today\'s forecast',
                 color: Colors.purple,
-                onTap: () {},
+                onTap: () {
+                  setState(() {
+                    _bottomNavIndex = 2; // Credits tab
+                  });
+                  // Switch to Monitor tab in CreditsTabView
+                  Future.delayed(Duration.zero, () {
+                    _creditsTabKey.currentState?.setTab(0);
+                  });
+                },
               ),
             ),
           ],
