@@ -77,7 +77,7 @@ class _FarmBoundaryDialogState extends State<FarmBoundaryDialog> {
   Future<void> _fetchNdvi() async {
     setState(() { _loadingNdvi = true; });
     final coords = _polygonPoints.map((p) => [p.longitude, p.latitude]).toList();
-    final url = 'http://192.168.190.237:5000/gee/ndvi'; // Replace with your backend URL
+    final url = 'http://192.168.0.100:5000/gee/ndvi'; // Replace with your backend URL
     final body = jsonEncode({'coordinates': coords});
     final response = await http.post(Uri.parse(url), body: body, headers: {'Content-Type': 'application/json'});
     if (response.statusCode == 200) {
