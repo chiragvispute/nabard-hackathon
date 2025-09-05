@@ -113,7 +113,7 @@ Smallholder farmers across India practicing sustainable agriculture, agroforestr
 
 ### 🎥 Demo Video
 
-- [Watch the full demo video here](https://your-demo-link.com)  
+- [Watch the full demo video here](https://drive.google.com/file/d/1LWlor_2SZiOOT8f8JJBVAQBj3QePDaLh/view?usp=drive_link)  
   _A step-by-step walkthrough of all features and workflows._
 
 ---
