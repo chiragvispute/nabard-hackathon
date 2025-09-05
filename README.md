@@ -105,9 +105,9 @@ Smallholder farmers across India practicing sustainable agriculture, agroforestr
   ![Monitor Tab](screenshots/monitor.png)  
   _Monitor real time farm data carbon ._
   ![Calculate Tab](screenshots/calculate.png)  
-  _Monitor real time farm data carbon ._
+  _Calculate carbon credits._
   ![Report Tab](screenshots/report.png)  
-  _Monitor real time farm data carbon ._
+  _View the report and export option ._
 
 ---
 
